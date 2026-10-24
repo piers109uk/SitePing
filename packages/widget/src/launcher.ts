@@ -452,8 +452,13 @@ export function launch(config: SitepingConfig): SitepingInstance {
     }
   });
 
-  const annotator = new Annotator(colors, bus, t, config.enableScreenshot ?? false, () =>
-    focusTracker.getLastPageFocus(),
+  const annotator = new Annotator(
+    colors,
+    bus,
+    t,
+    config.enableScreenshot ?? false,
+    () => focusTracker.getLastPageFocus(),
+    { feedbackTypes: config.feedbackTypes ?? true },
   );
 
   let onContextMenu: ((e: MouseEvent) => void) | null = null;

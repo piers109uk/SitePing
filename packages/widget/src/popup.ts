@@ -53,6 +53,11 @@ interface TypeOption {
  */
 type PopupSubmitHandler = (result: PopupResult) => Promise<void>;
 
+export interface PopupOptions {
+  /** `false` hides the type picker and submits every comment as `"other"`. Defaults to `true`. */
+  feedbackTypes?: boolean;
+}
+
 /**
  * Popup form shown after drawing an annotation rectangle.
  *
@@ -92,6 +97,7 @@ export class Popup {
   /** Rendered as a bottom sheet — decided per `show()` from the viewport. */
   private sheet = false;
   private stopKeyboardTracking: (() => void) | null = null;
+  private readonly pickType: boolean;
 
   /**
    * True from `show()` until its promise settles — through typing, the
@@ -112,7 +118,9 @@ export class Popup {
   constructor(
     private readonly colors: ThemeColors,
     private readonly t: TFunction,
+    options: PopupOptions = {},
   ) {
+    this.pickType = options.feedbackTypes ?? true;
     this.root = el("div", {
       style: /* css */ `
         position:fixed;
@@ -289,7 +297,7 @@ export class Popup {
     btnRow.appendChild(this.cancelBtn);
     btnRow.appendChild(this.submitBtn);
 
-    this.root.appendChild(this.typeRow);
+    if (this.pickType) this.root.appendChild(this.typeRow);
     this.root.appendChild(this.textarea);
     this.root.appendChild(this.hint);
     this.root.appendChild(btnRow);
@@ -363,7 +371,7 @@ export class Popup {
       this.cancelPendingTransition();
       this.resolve = resolve;
       this.onSubmit = onSubmit ?? null;
-      this.selectedType = null;
+      this.selectedType = this.pickType ? null : "other";
       this.textarea.value = "";
       this.submittingState = false;
       this.updateSubmitState();
@@ -422,12 +430,12 @@ export class Popup {
 
       // Trigger animation. Touch: focus the first type button rather than
       // the textarea, so the keyboard doesn't cover the sheet before the user
-      // has even picked a type.
+      // has even picked a type. Without a picker there is nothing to pick first.
       this.showFrame = requestAnimationFrame(() => {
         this.showFrame = null;
         this.root.style.opacity = "1";
         this.root.style.transform = "translateY(0) scale(1)";
-        (touch ? this.typeRow.querySelector("button") : this.textarea)?.focus();
+        (touch && this.pickType ? this.typeRow.querySelector("button") : this.textarea)?.focus();
       });
     });
   }

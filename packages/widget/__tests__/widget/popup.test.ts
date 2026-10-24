@@ -1374,6 +1374,63 @@ describe("Popup", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Type picker turned off
+// ---------------------------------------------------------------------------
+
+describe("Popup with feedbackTypes: false", () => {
+  let popup: Popup;
+
+  beforeEach(() => {
+    popup = new Popup(colors, t, { feedbackTypes: false });
+  });
+
+  afterEach(() => {
+    popup.destroy();
+  });
+
+  function typeMessage(message: string): HTMLTextAreaElement {
+    const textarea = document.querySelector<HTMLTextAreaElement>("textarea")!;
+    textarea.value = message;
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    return textarea;
+  }
+
+  function sendButton(): HTMLButtonElement {
+    return Array.from(document.querySelectorAll<HTMLButtonElement>("[role=dialog] button")).at(-1)!;
+  }
+
+  it("renders no type buttons", () => {
+    popup.show(makeBounds());
+    expect(document.querySelectorAll("[data-type]")).toHaveLength(0);
+  });
+
+  it("enables Send on text alone and submits as other", async () => {
+    const promise = popup.show(makeBounds());
+    expect(sendButton().disabled).toBe(true);
+    typeMessage("no type needed");
+    expect(sendButton().disabled).toBe(false);
+    sendButton().click();
+    expect(await promise).toEqual({ type: "other", message: "no type needed" });
+  });
+
+  it("submits as other with Meta+Enter", async () => {
+    const promise = popup.show(makeBounds());
+    const textarea = typeMessage("shortcut");
+    textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }));
+    expect(await promise).toEqual({ type: "other", message: "shortcut" });
+  });
+
+  it("still requires text", async () => {
+    const promise = popup.show(makeBounds());
+    const textarea = typeMessage("   ");
+    textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }));
+    expect(popup.isOpen).toBe(true);
+    popup.dismiss();
+    expect(await promise).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Platform detection (Mac vs other) for the keyboard hint
 // ---------------------------------------------------------------------------
 

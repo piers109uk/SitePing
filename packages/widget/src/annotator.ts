@@ -6,7 +6,7 @@ import type { EventBus, WidgetEvents } from "./events.js";
 import { deepFocusTarget, isWidgetChrome } from "./focus-tracker.js";
 import { isolateFromHost, registerEscapeLayer } from "./host-isolation.js";
 import type { TFunction } from "./i18n/index.js";
-import { Popup } from "./popup.js";
+import { Popup, type PopupOptions } from "./popup.js";
 import { NO_VIEWPORT_INSETS, type ViewportInsets } from "./popup-placement.js";
 import { type AnnotatedScreenshot, captureAnnotatedScreenshot } from "./screenshot.js";
 import type { ThemeColors } from "./styles/theme.js";
@@ -123,8 +123,9 @@ export class Annotator {
     private readonly t: TFunction,
     private readonly enableScreenshot: boolean = false,
     private readonly getFallbackTarget?: () => HTMLElement | null,
+    popupOptions: PopupOptions = {},
   ) {
-    this.popup = new Popup(colors, t);
+    this.popup = new Popup(colors, t, popupOptions);
 
     this.bus.on("annotation:start", () => this.activate());
   }

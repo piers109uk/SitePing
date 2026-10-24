@@ -278,6 +278,13 @@ export interface SitepingBaseConfig {
    */
   enableRightClickComment?: boolean | undefined;
   /**
+   * Show the Question / Change / Bug / Other picker in the comment popup.
+   * Defaults to `true`. `false` hides it: Send enables on text alone and
+   * every comment is saved as `"other"`, for reviewers who should not have to
+   * classify what they write.
+   */
+  feedbackTypes?: boolean | undefined;
+  /**
    * Capture the last few `console.*` calls and failed network requests
    * (HTTP >= 400 or network error) at the moment a feedback is submitted.
    *
